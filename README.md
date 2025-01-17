@@ -65,8 +65,8 @@
     
     국토교통부_용도별건물정보 및 산림빅데이터 거래소 데이터를 활용하여 예측 모델 개발.
     
-    ![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/d9d2fbfd-f083-42d0-8d71-34f9bad3962c/dece014f-fa1b-4145-8a26-9cbec940b254/image.png)
-    
+    ![3](https://github.com/user-attachments/assets/06d93efe-69de-4e36-a4b0-5c993c6038c6)
+
 
 # 결과 및 성과
 
@@ -85,9 +85,9 @@
 
 **한준희** - GeoJSON, OpenStreetMap 지도 시각화 및 실시간 데이터 차트 출력
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/d9d2fbfd-f083-42d0-8d71-34f9bad3962c/39915230-7deb-48c8-8551-5f161ee40bf0/image.png)
+    ![2](https://github.com/user-attachments/assets/3843099e-9fac-4268-bcf4-97e344a1970d)
+    ![1](https://github.com/user-attachments/assets/ce80ba45-dd00-4163-9e41-51860667fd61)
 
-![image (2).png](https://prod-files-secure.s3.us-west-2.amazonaws.com/d9d2fbfd-f083-42d0-8d71-34f9bad3962c/3e93f853-7176-4aeb-8301-c2987aae1308/image_(2).png)
 
 ## 프로젝트 요약
 
