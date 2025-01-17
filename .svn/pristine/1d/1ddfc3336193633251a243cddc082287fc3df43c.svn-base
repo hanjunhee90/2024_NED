@@ -1,0 +1,40 @@
+package DJEnergy.proj.kr.dashboard.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import DJEnergy.proj.kr.dashboard.dao.IDashBoardDAO;
+import DJEnergy.proj.kr.dashboard.vo.DashBoardVO;
+
+/**
+ * Class Name  : DashBoardService
+ * Author      : LeeSoHee
+ * Created Date: 2024. 11. 22.
+ * Version: 1.0
+ * Purpose:   
+ * Description: 
+ */
+@Service
+public class DashBoardService {
+	
+	@Autowired
+	IDashBoardDAO dao;
+	
+	// 대전시 전체 에너지 사용량 조회
+	public List<DashBoardVO> getAllData(int year){
+		return dao.getAllData(year);
+	}
+	
+	// 대전시 평균 에너지 사용량
+	public List<DashBoardVO> getDJAVGData(int year){
+		return dao.getDJAVGData(year);
+	};
+	
+	// 구별 에너지 사용량
+	public List<DashBoardVO> getGuData(DashBoardVO vo){
+		return dao.getGuData(vo);
+	};
+
+}

@@ -1,0 +1,5 @@
+package DJEnergy.proj.kr.dashboard.vo;
+
+public class DashBoardVO {
+
+}

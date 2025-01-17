@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="DJEnergy.proj.kr.addrData.dao.IaddrDataDAO">
+
+	<select id="getAddtList" parameterType="string" resultType="addrDataVO">
+	
+		SELECT distinct LOTNO_ADDR, ROAD_NM_ADDR, sgng_cd, stdg_cd
+		FROM daejeon_energy1
+		WHERE ROAD_NM_ADDR LIKE '%'||#{userAddr}||'%'
+		OR LOTNO_ADDR LIKE '%'||#{userAddr}||'%'
+	
+	</select>
+	 
+	<select id="getAddrDetail" parameterType="addrDataVO" resultType="addrDataVO">
+		
+		SELECT 
+		        bbb.STNDD_YR,
+		        bbb.USE_MM,
+		        bbb.SGNG_CD,
+		        bbb.STDG_CD,
+		        aaa.STDG_NM,
+		        bbb.LOTNO_ADDR, bbb.ROAD_NM_ADDR,
+		        ELRW_USQNT_avg,
+		        ELRW_USQNT,
+		        CTY_GAS_USQNT_avg,
+		        CTY_GAS_USQNT,
+		        SUM_NRG_USQNT_avg,
+		        SUM_NRG_USQNT,
+		        ELRW_GRGS_DSAMT_avg,
+		        ELRW_GRGS_DSAMT,
+		        CTY_GAS_GRGS_DSAMT_avg,
+		        CTY_GAS_GRGS_DSAMT,
+		        SUM_GRGS_DSAMT_avg,
+		        SUM_GRGS_DSAMT
+		FROM(
+		            SELECT
+		                STNDD_YR,
+		                USE_MM,
+		                aa.SGNG_CD,
+		                aa.STDG_CD,
+		                bb.STDG_NM,
+		                CEIL(AVG(ELRW_USQNT)) as ELRW_USQNT_avg,  
+		                CEIL(AVG(CTY_GAS_USQNT)) as CTY_GAS_USQNT_avg,
+		                CEIL(AVG(SUM_NRG_USQNT)) as SUM_NRG_USQNT_avg,
+		                CEIL(AVG(ELRW_GRGS_DSAMT)) as ELRW_GRGS_DSAMT_avg,  
+                		CEIL(AVG(CTY_GAS_GRGS_DSAMT)) as CTY_GAS_GRGS_DSAMT_avg,
+                		CEIL(AVG(SUM_GRGS_DSAMT)) as SUM_GRGS_DSAMT_avg  
+		            FROM(
+		                    SELECT 
+		                        STNDD_YR,
+		                        USE_MM,
+		                        a.SGNG_CD,
+		                        a.STDG_CD,
+		                        LOTNO_ADDR,
+		                        ROUND(SUM(ELRW_USQNT)) as ELRW_USQNT,  
+		                        ROUND(SUM(CTY_GAS_USQNT)) as CTY_GAS_USQNT,
+		                        ROUND(SUM(SUM_NRG_USQNT)) as SUM_NRG_USQNT,
+		                        ROUND(SUM(ELRW_GRGS_DSAMT)) as ELRW_GRGS_DSAMT, 
+                        		ROUND(SUM(CTY_GAS_GRGS_DSAMT)) as CTY_GAS_GRGS_DSAMT, 
+                        		ROUND(SUM(SUM_GRGS_DSAMT)) as SUM_GRGS_DSAMT 
+		                    FROM daejeon_energy1 a
+		                    WHERE STNDD_YR = #{stnddYr}
+		                    AND a.SGNG_CD = (SELECT distinct SGNG_CD
+		                                        FROM daejeon_energy1
+		                                        WHERE LOTNO_ADDR = #{lotnoAddr})
+		                    AND a.STDG_CD = (SELECT distinct STDG_CD
+		                                        FROM daejeon_energy1
+		                                        WHERE LOTNO_ADDR = #{lotnoAddr})
+		                    GROUP BY STNDD_YR, USE_MM, a.SGNG_CD, a.STDG_CD, LOTNO_ADDR
+		                    ORDER BY STNDD_YR, TO_NUMBER(USE_MM), SGNG_CD
+		                    ) aa, sgng_stdg_nm bb
+		            WHERE aa.sgng_cd = bb.sgng_cd
+		            AND aa.stdg_cd = bb.stdg_cd
+		            GROUP BY STNDD_YR, USE_MM, aa.SGNG_CD, aa.STDG_CD, bb.STDG_NM
+		            ORDER BY STNDD_YR, TO_NUMBER(USE_MM)
+		            ) aaa, (
+		               SELECT LOTNO_ADDR, ROAD_NM_ADDR, SGNG_CD, STDG_CD,
+		                       STNDD_YR, USE_MM, 
+		                       ELRW_USQNT, CTY_GAS_USQNT, SUM_NRG_USQNT,
+		                       ROUND(ELRW_GRGS_DSAMT) as ELRW_GRGS_DSAMT, 
+		                       ROUND(CTY_GAS_GRGS_DSAMT) as CTY_GAS_GRGS_DSAMT, 
+		                       ROUND(SUM_GRGS_DSAMT) as SUM_GRGS_DSAMT
+		                FROM daejeon_energy1
+		                WHERE LOTNO_ADDR = #{lotnoAddr}
+		                AND STNDD_YR = #{stnddYr}
+		                ORDER BY STNDD_YR, TO_NUMBER(USE_MM)) bbb
+		WHERE aaa.use_mm=bbb.use_mm
+		AND aaa.STDG_CD = bbb.STDG_CD
+			
+	</select>
+
+</mapper>

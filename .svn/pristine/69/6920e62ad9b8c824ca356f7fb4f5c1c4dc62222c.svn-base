@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="DJEnergy.proj.kr.dashboard.dao.IDashBoardDAO">
+	
+	<select id="getAllData" parameterType="int"  resultType="DashBoardVO" >
+			SELECT 
+			    STNDD_YR,
+			    USE_MM,
+			    CEIL(SUM(ELRW_USQNT)/1000) as ELRW_USQNT,  
+			    CEIL(SUM(CTY_GAS_USQNT)/1000) as CTY_GAS_USQNT,
+			    CEIL(SUM(SUM_NRG_USQNT)/1000) as SUM_NRG_USQNT
+			FROM daejeon_energy1
+			WHERE STNDD_YR = #{year}
+			GROUP BY STNDD_YR, USE_MM
+			ORDER BY STNDD_YR, TO_NUMBER(USE_MM)
+	</select>
+
+	<select id="getDJAVGData" parameterType="int"  resultType="DashBoardVO">
+	
+		SELECT 
+		    STNDD_YR,
+		    USE_MM,
+		    ROUND(AVG(ELRW_USQNT),2) as ELRW_USQNT,  
+		    ROUND(AVG(CTY_GAS_USQNT),2) as CTY_GAS_USQNT,
+		    ROUND(AVG(SUM_NRG_USQNT),2) as SUM_NRG_USQNT 
+		FROM(
+		        SELECT 
+		            STNDD_YR,
+		            USE_MM,
+		            a.SGNG_CD,
+		            ROUND(AVG(ELRW_USQNT),2) as ELRW_USQNT,  
+		            ROUND(AVG(CTY_GAS_USQNT),2) as CTY_GAS_USQNT,
+		            ROUND(AVG(SUM_NRG_USQNT),2) as SUM_NRG_USQNT 
+		        FROM daejeon_energy1 a
+		        WHERE STNDD_YR = #{year}
+		        GROUP BY STNDD_YR, USE_MM, a.SGNG_CD
+		        ORDER BY STNDD_YR, TO_NUMBER(USE_MM), SGNG_CD
+		     )
+		GROUP BY STNDD_YR, USE_MM
+		ORDER BY STNDD_YR, TO_NUMBER(USE_MM)
+	
+	</select>
+	
+	<select id="getGuData" parameterType="DashBoardVO" resultType="DashBoardVO">
+		
+		SELECT 
+		    STNDD_YR,
+		    USE_MM,
+		    a.SGNG_CD,
+		    ROUND(AVG(ELRW_USQNT),2) as ELRW_USQNT,  
+		    ROUND(AVG(CTY_GAS_USQNT),2) as CTY_GAS_USQNT,
+		    ROUND(AVG(SUM_NRG_USQNT),2) as SUM_NRG_USQNT 
+		FROM daejeon_energy1 a
+		WHERE STNDD_YR = #{stnddYr}
+		AND a.SGNG_CD = #{sgngCd}
+		GROUP BY STNDD_YR, USE_MM, a.SGNG_CD
+		ORDER BY STNDD_YR, TO_NUMBER(USE_MM), SGNG_CD
+		
+	</select>
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+

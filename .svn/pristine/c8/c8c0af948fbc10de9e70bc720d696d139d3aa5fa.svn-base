@@ -1,0 +1,21 @@
+package DJEnergy.proj.kr.dashboard.dao;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import DJEnergy.proj.kr.dashboard.vo.DashBoardVO;
+
+/**
+ * Class Name  : IDashBoardDAO
+ * Author      : LeeSoHee
+ * Created Date: 2024. 11. 22.
+ * Version: 1.0
+ * Purpose:   DAO 생성
+ * Description: 
+ */
+@Mapper
+public interface IDashBoardDAO {
+	
+	public List<DashBoardVO> getAllData();
+}

@@ -1,0 +1,341 @@
+// ECharts 인스턴스 생성
+var chart = echarts.init(document.getElementById('main'));
+var chart2 = echarts.init(document.getElementById('main2'));
+
+// 전역 변수로 selectedSigCd 정의
+var selectedSigCd = '30170'; // 초기값은 서구 (30170)
+
+// 지도에서 구 클릭 시 데이터 가져오는 AJAX 함수
+function fetchChartData(sigCd, year) {
+    var energyType = $('#energyType').val();
+    var isElectricity = (energyType === '전기');
+    
+    $.ajax({
+        url: '/getGuUsqnt',
+        type: 'GET',
+        data: { gu: sigCd, year: year }
+    }).done(function(response) {
+        // 데이터 형식: [AvgDataVO, AvgDataVO, ...]
+        var months = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+        var datasetGu = new Array(12).fill(0);
+        var datasetAll = new Array(12).fill(0);
+        var selectedGuName = getGuNameBySigCd(sigCd);
+        var usageLabel = isElectricity ? '전기 사용량' : '가스 사용량';
+
+        // 테이블 헤더 수정
+        $('#energyTb thead th:last-child').text(usageLabel);
+
+        // 테이블 초기화
+        $('#energyTb tbody').remove();
+        var tbody = $('<tbody></tbody>');
+
+        $.each(response, function(index, data) {
+            var monthIndex = data.useMm - 1;
+            var yearMonth = data.stnddYr + '년 ' + data.useMm + '월';
+            if (isElectricity) {
+                datasetGu[monthIndex] = parseFloat(data.elrwUsqnt) || 0;
+                datasetAll[monthIndex] = parseFloat(data.elrwUsqntAvg) || 0;
+            } else {
+                datasetGu[monthIndex] = parseFloat(data.ctyGasUsqnt) || 0;
+                datasetAll[monthIndex] = parseFloat(data.ctyGasUsqntAvg) || 0;
+            }
+
+            // 테이블에 데이터 추가
+            var row1 = $('<tr></tr>');
+            row1.append($('<td rowspan="2" style="vertical-align: middle; text-align: center;">' + yearMonth + '</td>'));
+            row1.append($('<td>대전시 평균</td>'));
+            row1.append($('<td style="text-align: center;">' + datasetAll[monthIndex].toLocaleString() + '</td>'));
+            tbody.append(row1);
+
+            var row2 = $('<tr></tr>');
+            row2.append($('<td>' + selectedGuName + '</td>'));
+            row2.append($('<td style="text-align: center;">' + datasetGu[monthIndex].toLocaleString() + '</td>'));
+            tbody.append(row2);
+        });
+
+        $('#energyTb').append(tbody);
+
+        // 옵션 설정
+        var option = {
+            title: {
+                text: '에너지 사용량 비교'
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    label: {
+                        backgroundColor: '#6a7985'
+                    }
+                }
+            },
+            legend: {
+                data: [selectedGuName, '대전 전체']
+            },
+            toolbox: {
+                feature: {
+                    saveAsImage: {}
+                }
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: months,
+                    axisLabel: {
+                        formatter: function (value, index) {
+                            return index % 2 === 0 ? value : '';
+                        }
+                    }
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value'
+                }
+            ],
+            series: [
+                {
+                    name: selectedGuName,
+                    type: 'line',
+                    stack: null, // stack 설정 제거하여 두 값이 더해지지 않도록 수정
+                    smooth: true,
+                    lineStyle: {
+                        color: 'rgba(219, 238, 188, 1)'
+                    },
+                    areaStyle: {
+                        color: 'rgba(219, 238, 188, 0.05)'
+                    },
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    itemStyle: {
+                        color: 'rgba(219, 238, 188, 1)'
+                    },
+                    data: datasetGu
+                },
+                {
+                    name: '대전 전체',
+                    type: 'line',
+                    stack: null, // stack 설정 제거하여 두 값이 더해지지 않도록 수정
+                    smooth: true,
+                    lineStyle: {
+                        color: 'rgba(147, 215, 73, 1)'
+                    },
+                    areaStyle: {
+                        color: 'rgba(147, 215, 73, 0.05)'
+                    },
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    itemStyle: {
+                        color: 'rgba(147, 215, 73, 1)'
+                    },
+                    data: datasetAll
+                }
+            ]
+        };
+
+        // 옵션을 사용해 차트를 그립니다
+        chart.setOption(option);
+
+        // 차트 제목 업데이트 (구 이름 및 사용량 유형 반영)
+        $('#selectGu, #selectGu2').text(selectedGuName + ' 에너지 사용량');
+    }).fail(function(error) {
+        console.error('Error fetching chart data:', error);
+    });
+}
+
+// 온실가스 데이터 가져오는 함수
+function fetchGasChartData(sigCd, year) {
+    var energyType = $('#energyType2').val();
+    var isElectricity = (energyType === '전기');
+    console.log('Request Parameters:', { gu: sigCd, year2: year });
+    $.ajax({
+        url: '/getGuDsamt',
+        type: 'GET',
+        data: { gu: sigCd, year2: year }
+    
+    }).done(function(response) {
+        // 데이터 형식: [AvgDataVO, AvgDataVO, ...]
+        var months = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+        var datasetGu = new Array(12).fill(0);
+        var datasetAll = new Array(12).fill(0);
+        var selectedGuName = getGuNameBySigCd(sigCd);
+        var usageLabel = isElectricity ? '전력 온실가스 배출량' : '가스 온실가스 배출량';
+
+        // 테이블 헤더 수정
+        $('#energyTb2 thead th:last-child').text(usageLabel);
+
+        // 테이블 초기화
+        $('#energyTb2 tbody').remove();
+        var tbody = $('<tbody></tbody>');
+
+        $.each(response, function(index, data) {
+            var monthIndex = data.useMm - 1;
+            var yearMonth = data.stnddYr + '년 ' + data.useMm + '월';
+            if (isElectricity) {
+                datasetGu[monthIndex] = parseFloat(data.elrwGrgsDsamt) || 0;
+                datasetAll[monthIndex] = parseFloat(data.elrwGrgsDsamtAvg) || 0;
+            } else {
+                datasetGu[monthIndex] = parseFloat(data.ctyGasGrgsDsamt) || 0;
+                datasetAll[monthIndex] = parseFloat(data.ctyGasGrgsDsamtAvg) || 0;
+            }
+
+            // 테이블에 데이터 추가
+            var row1 = $('<tr></tr>');
+            row1.append($('<td rowspan="2" style="vertical-align: middle; text-align: center;">' + yearMonth + '</td>'));
+            row1.append($('<td>대전시 평균</td>'));
+            row1.append($('<td style="text-align: center;">' + datasetAll[monthIndex].toLocaleString() + '</td>'));
+            tbody.append(row1);
+
+            var row2 = $('<tr></tr>');
+            row2.append($('<td>' + selectedGuName + '</td>'));
+            row2.append($('<td style="text-align: center;">' + datasetGu[monthIndex].toLocaleString() + '</td>'));
+            tbody.append(row2);
+        });
+
+        $('#energyTb2').append(tbody);
+
+        // 옵션 설정
+        var option = {
+            title: {
+                text: '온실가스 배출량 비교'
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    label: {
+                        backgroundColor: '#6a7985'
+                    }
+                }
+            },
+            legend: {
+                data: [selectedGuName, '대전 전체']
+            },
+            toolbox: {
+                feature: {
+                    saveAsImage: {}
+                }
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: months,
+                    axisLabel: {
+                        formatter: function (value, index) {
+                            return index % 2 === 0 ? value : '';
+                        }
+                    }
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value'
+                }
+            ],
+            series: [
+                {
+                    name: selectedGuName,
+                    type: 'line',
+                    stack: null, // stack 설정 제거하여 두 값이 더해지지 않도록 수정
+                    smooth: true,
+                    lineStyle: {
+                        color: 'rgba(255, 127, 80, 1)'
+                    },
+                    areaStyle: {
+                        color: 'rgba(255, 127, 80, 0.05)'
+                    },
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    itemStyle: {
+                        color: 'rgba(255, 127, 80, 1)'
+                    },
+                    data: datasetGu
+                },
+                {
+                    name: '대전 전체',
+                    type: 'line',
+                    stack: null, // stack 설정 제거하여 두 값이 더해지지 않도록 수정
+                    smooth: true,
+                    lineStyle: {
+                        color: 'rgba(255, 99, 71, 1)'
+                    },
+                    areaStyle: {
+                        color: 'rgba(255, 99, 71, 0.05)'
+                    },
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    itemStyle: {
+                        color: 'rgba(255, 99, 71, 1)'
+                    },
+                    data: datasetAll
+                }
+            ]
+        };
+
+        // 옵션을 사용해 차트를 그립니다
+        chart2.setOption(option);
+
+        // 차트 제목 업데이트 (구 이름 및 사용량 유형 반영)
+        $('#selectGu, #selectGu2').text(selectedGuName + ' 온실가스 배출량');
+    }).fail(function(error) {
+        console.error('Error fetching chart data:', error);
+    });
+}
+
+// 지도에서 구 클릭 시 호출하는 함수
+window.onRegionClick = function(sigCd) {
+    selectedSigCd = sigCd;
+    var year = $('#year').val();
+    fetchChartData(sigCd, year);
+    fetchGasChartData(sigCd, year); // 온실가스 데이터도 초기화
+};
+
+// 초기 차트 데이터를 설정하기 위해 서구(코드값: 30170)와 년도 2022 전달
+fetchChartData('30170', '2022');
+fetchGasChartData('30170', '2022');
+
+// 에너지 데이터 select 박스 변경 시 차트 업데이트
+$('#year, #energyType').on('change', function () {
+    if (selectedSigCd) {
+        var year = $('#year').val();
+        fetchChartData(selectedSigCd, year);
+    }
+});
+
+// 온실가스 데이터 select 박스 변경 시 차트 업데이트
+$('#year2, #energyType2').on('change', function () {
+    if (selectedSigCd) {
+        var year = $('#year2').val();
+        fetchGasChartData(selectedSigCd, year);
+    }
+});
+
+// 구 코드에 따른 구 이름 반환 함수
+function getGuNameBySigCd(sigCd) {
+    switch(sigCd) {
+        case '30200': return '유성구';
+        case '30110': return '동구';
+        case '30170': return '서구';
+        case '30140': return '중구';
+        case '30230': return '대덕구';
+        default: return '알 수 없음';
+    }
+}

@@ -1,0 +1,107 @@
+package DJEnergy.proj.kr.dashboard.web;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import DJEnergy.proj.kr.dashboard.service.DashBoardService;
+import DJEnergy.proj.kr.dashboard.vo.DashBoardVO;
+
+/**
+ * Class Name  : DashBoardController
+ * Author      : LeeSoHee
+ * Created Date: 2024. 11. 22.
+ * Version: 1.0
+ * Purpose:   
+ * Description: 
+ */
+@Controller
+public class DashBoardController {
+	
+	@Autowired
+	DashBoardService service;
+	
+	@RequestMapping("/")
+	public String basicInfo(Model model) {
+		List<DashBoardVO> basicAllInfo = service.getAllData(2022);
+		model.addAttribute("basicAllInfo", basicAllInfo);
+		return "home";
+	}
+	
+	// 대전시 전체 에너지 사용량
+	@ResponseBody
+	@PostMapping("/daejeonAll")
+	public List<DashBoardVO> dashBoard(@RequestParam("year") String year) {
+		int num = Integer.parseInt(year);
+		List<DashBoardVO> dashBoardList = service.getAllData(num);
+		return dashBoardList;
+	}
+	
+	
+	// 구별 에너지 사용량
+	@ResponseBody
+	@PostMapping("/getGuUsqnt")
+	public List<DashBoardVO> getGuUsqnt(
+			@RequestParam("year") String year,
+			@RequestParam("gu") String gu) {
+		DashBoardVO vo = new DashBoardVO();
+		vo.setStnddYr(year);
+		vo.setSgngCd(gu);
+		List<DashBoardVO> dashBoardList = service.getGuUsqnt(vo);
+		return dashBoardList;
+	}
+	
+	// 구별 온실가스 배출량
+	@ResponseBody
+	@PostMapping("/getGuDsamt")
+	public List<DashBoardVO> getGuDsamt(
+			@RequestParam("year") String year,
+			@RequestParam("gu") String gu) {
+		DashBoardVO vo = new DashBoardVO();
+		vo.setStnddYr(year);
+		vo.setSgngCd(gu);
+		List<DashBoardVO> dashBoardList = service.getGuDsamt(vo);
+		return dashBoardList;
+	}
+	
+	// 동별 에너지 사용량
+	@ResponseBody
+	@PostMapping("/getDongUsqnt")
+	public List<DashBoardVO> getDongUsqnt(
+			@RequestParam("year") String year,
+			@RequestParam("gu") String gu,
+			@RequestParam("Dong") String Dong) {
+		DashBoardVO vo = new DashBoardVO();
+		vo.setStnddYr(year);
+		vo.setSgngCd(gu);
+		vo.setStdgCd(Dong);
+		List<DashBoardVO> dashBoardList = service.getDongUsqnt(vo);
+		return dashBoardList;
+	}
+	
+	// 동별 온실가스 배출량
+	@ResponseBody
+	@PostMapping("/getDongDsamt")
+	public List<DashBoardVO> getDongDsamt(
+			@RequestParam("year") String year,
+			@RequestParam("gu") String gu,
+			@RequestParam("Dong") String Dong) {
+		DashBoardVO vo = new DashBoardVO();
+		vo.setStnddYr(year);
+		vo.setSgngCd(gu);
+		vo.setStdgCd(Dong);
+		List<DashBoardVO> dashBoardList = service.getDongDsamt(vo);
+		return dashBoardList;
+	}	
+	
+	@RequestMapping("/example")
+	public String example() {
+		return "example";
+	}
+}

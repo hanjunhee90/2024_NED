@@ -1,0 +1,36 @@
+package DJEnergy.proj.kr.dashboard.web;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import DJEnergy.proj.kr.dashboard.service.DashBoardService;
+import DJEnergy.proj.kr.dashboard.vo.DashBoardVO;
+
+/**
+ * Class Name  : DashBoardController
+ * Author      : LeeSoHee
+ * Created Date: 2024. 11. 22.
+ * Version: 1.0
+ * Purpose:   
+ * Description: 
+ */
+@Controller
+public class DashBoardController {
+	
+	@Autowired
+	DashBoardService service;
+	
+	@RequestMapping("/")
+	public String dashBoard(Model model) {
+		List<DashBoardVO> dashBoardList = service.getAllData();
+		model.addAttribute("daejeonAll", dashBoardList);
+		return "/";
+	}
+	
+	
+	
+}

@@ -1,0 +1,26 @@
+package DJEnergy.proj.kr.dashboard.dao;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import DJEnergy.proj.kr.dashboard.vo.DashBoardVO;
+
+/**
+ * Class Name  : IDashBoardDAO
+ * Author      : LeeSoHee
+ * Created Date: 2024. 11. 22.
+ * Version: 1.0
+ * Purpose:   DAO 생성
+ * Description: 
+ */
+@Mapper
+public interface IDashBoardDAO {
+	
+	// 대전시 전체 에너지 사용량 조회
+	public List<DashBoardVO> getAllData(int year);
+	// 대전시 평균 에너지 사용량
+	public List<DashBoardVO> getDJAVGData(int year);
+	// 구별 에너지 사용량
+	public List<DashBoardVO> getGuData(DashBoardVO vo);
+}

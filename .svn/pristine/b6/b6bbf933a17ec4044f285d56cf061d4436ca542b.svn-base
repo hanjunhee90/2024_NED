@@ -1,0 +1,49 @@
+package DJEnergy.proj.kr.dashboard.web;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import DJEnergy.proj.kr.dashboard.service.DashBoardService;
+import DJEnergy.proj.kr.dashboard.vo.DashBoardVO;
+
+/**
+ * Class Name  : DashBoardController
+ * Author      : LeeSoHee
+ * Created Date: 2024. 11. 22.
+ * Version: 1.0
+ * Purpose:   
+ * Description: 
+ */
+@Controller
+public class DashBoardController {
+	
+	@Autowired
+	DashBoardService service;
+	
+	@RequestMapping("/")
+	public String basicInfo(Model model) {
+		List<DashBoardVO> basicAllInfo = service.getAllData(2022);
+		model.addAttribute("basicAllInfo", basicAllInfo);
+		return "home";
+	}
+	
+	@ResponseBody
+	@PostMapping("/daejeonAll")
+	public List<DashBoardVO> dashBoard(@RequestParam("year") String year) {
+		int num = Integer.parseInt(year);
+		List<DashBoardVO> dashBoardList = service.getAllData(num);
+		return dashBoardList;
+	}
+	
+	@RequestMapping("/example")
+	public String example() {
+		return "example";
+	}
+}

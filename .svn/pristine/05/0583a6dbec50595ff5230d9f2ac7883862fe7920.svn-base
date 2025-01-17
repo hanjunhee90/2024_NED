@@ -1,0 +1,8 @@
+package DJEnergy.proj.kr.addrData.service;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class addrDataService {
+
+}

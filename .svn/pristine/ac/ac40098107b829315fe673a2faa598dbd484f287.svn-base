@@ -1,0 +1,122 @@
+// Leaflet.js 지도 초기화
+const map = L.map('map', {
+    center: [36.35, 127.38], // 대전광역시 중심 좌표
+    zoom: 11, // 초기 줌 레벨
+    zoomControl: true, // 확대/축소 버튼 활성화
+    dragging: false, // 드래그 활성화
+    scrollWheelZoom: true, // 마우스 휠 확대/축소 활성화
+    doubleClickZoom: true, // 더블 클릭 확대/축소 활성화
+    touchZoom: true, // 터치 확대/축소 활성화
+    keyboard: true, // 키보드 이동 활성화
+    attributionControl: false // OSM 저작권 표시 비활성화
+});
+
+// 지도 타일 추가
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors', // 타일 제공자 표시
+    maxZoom: 18,
+    minZoom: 10,
+    opacity: 0.8,
+    tileSize: 256
+}).addTo(map);
+
+// 기본 GeoJSON 스타일 정의
+const geojsonStyles = {
+    "유성구": { color: "#FF6F61", fillColor: "#FFB6B9", fillOpacity: 0.7, weight: 2 },
+    "동구": { color: "#6B8E23", fillColor: "#98FB98", fillOpacity: 0.7, weight: 2 },
+    "서구": { color: "#4682B4", fillColor: "#87CEFA", fillOpacity: 0.7, weight: 2 },
+    "중구": { color: "#FFA500", fillColor: "#FFD700", fillOpacity: 0.7, weight: 2 },
+    "대덕구": { color: "#800080", fillColor: "#DDA0DD", fillOpacity: 0.7, weight: 2 }
+};
+
+// Hover 시 변경할 스타일 정의
+const hoverStyles = {
+    "유성구": { color: "#D32F2F", fillColor: "#FF9999", fillOpacity: 0.85, weight: 3 },
+    "동구": { color: "#556B2F", fillColor: "#A3DCA3", fillOpacity: 0.85, weight: 3 },
+    "서구": { color: "#2E8B57", fillColor: "#66CDAA", fillOpacity: 0.85, weight: 3 },
+    "중구": { color: "#FF8C00", fillColor: "#FFDEAD", fillOpacity: 0.85, weight: 3 },
+    "대덕구": { color: "#4B0082", fillColor: "#DA70D6", fillOpacity: 0.85, weight: 3 }
+};
+
+// 각 구의 중심 좌표
+const predefinedCenters = {
+    "유성구": [36.36454, 127.32646],
+    "동구": [36.33430, 127.4748],
+    "서구": [36.30037, 127.3548],
+    "중구": [36.28672, 127.4031],
+    "대덕구": [36.42092, 127.44237]
+};
+
+// GeoJSON 파일 로드 및 지도에 추가
+const geojsonFiles = [
+    { file: "/resources/json/30200_yuseong.json", name: "유성구" },
+    { file: "/resources/json/30110_dong.json", name: "동구" },
+    { file: "/resources/json/30170_seo.json", name: "서구" },
+    { file: "/resources/json/30140_jung.json", name: "중구" },
+    { file: "/resources/json/30230_daedeok.json", name: "대덕구" }
+];
+
+geojsonFiles.forEach(geojson => {
+    fetch(geojson.file)
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            // GeoJSON 데이터를 지도에 추가
+            L.geoJSON(data, {
+                style: geojsonStyles[geojson.name],
+                onEachFeature: (feature, layer) => {
+                    // Hover 이벤트: 색상과 두께 변경 및 클래스 추가
+                    layer.on("mouseover", () => {
+                        layer.setStyle(hoverStyles[geojson.name]);
+                        layer.bringToFront(); // Hover된 레이어를 최상단으로 이동
+                        layer.getElement().classList.add('leaflet-hover'); // Hover 시 그림자 및 크기 확대 효과 추가
+                    });
+
+                    // Hover 해제: 원래 스타일로 복구 및 클래스 제거
+                    layer.on("mouseout", () => {
+                        layer.setStyle(geojsonStyles[geojson.name]);
+                        layer.getElement().classList.remove('leaflet-hover'); // Hover 해제 시 효과 제거
+                    });
+
+                    // feature.properties에서 SIG_CD 가져오기
+                    var sigCd = feature.properties.SIG_CD || "N/A";
+
+                    // 클릭 이벤트: 구의 정보 출력
+                    layer.on("click", (e) => {
+                        const { lat, lng } = e.latlng;
+                        alert(`${geojson.name}을 클릭했습니다.\n위도: ${lat.toFixed(5)}, 경도: ${lng.toFixed(5)}\n구코드: ${sigCd}`);
+                    });
+                }
+            }).addTo(map);
+
+            // 구 이름 라벨 표시
+            const center = predefinedCenters[geojson.name];
+            if (center) {
+                L.marker(center, {
+                    icon: L.divIcon({
+                        className: 'label',
+                        html: `<b>${geojson.name}</b>`,
+                        iconSize: [150, 40],
+                        iconAnchor: [75, 20]
+                    })
+                }).addTo(map);
+            }
+        })
+        .catch(error => {
+            console.error(`Error loading GeoJSON file (${geojson.file}):`, error);
+        });
+});
+
+// 범례 추가
+const legend = L.control({ position: "bottomright" });
+legend.onAdd = function () {
+    const div = L.DomUtil.create("div", "legend");
+    div.innerHTML = "<h4>구별 색상</h4>";
+    for (const [name, style] of Object.entries(geojsonStyles)) {
+        div.innerHTML += `<i style="background:${style.fillColor}; width: 14px; height: 14px; display: inline-block; margin-right: 5px; border-radius: 2px;"></i> ${name}<br>`;
+    }
+    return div;
+};
+legend.addTo(map);
