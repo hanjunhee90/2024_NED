@@ -1,4 +1,4 @@
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/d9d2fbfd-f083-42d0-8d71-34f9bad3962c/ed293818-5565-4fa5-a793-6575bb303695/image.png)
+![efawefawefawefawefawe](https://github.com/user-attachments/assets/ebe9bc73-c028-4758-b266-e75f6a2bfc43)
 
 # 프로젝트 소개
 
